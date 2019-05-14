@@ -5,6 +5,7 @@
 #include "Components/MeshComponent.h"
 #include "Interfaces/Interface_CollisionDataProvider.h"
 #include "StreetMapSceneProxy.h"
+#include "StreetSplineRoad.h"
 #include "StreetMapComponent.generated.h"
 
 
@@ -61,7 +62,7 @@ public:
 	}
 
 	/** Returns true, if the input PropertyName correspond to a collision property. */
-	bool IsCollisionProperty(const FName& PropertyName) const 
+	bool IsCollisionProperty(const FName& PropertyName) const
 	{
 		return PropertyName == TEXT("bGenerateCollision") || PropertyName == TEXT("bAllowDoubleSidedGeometry");
 	}
@@ -153,6 +154,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "StreetMap")
 		UStreetMap* StreetMap;
 
+    UPROPERTY(EditAnywhere, Category = "StreetMap")
+    double RelativeLatitude;
+
+    UPROPERTY(EditAnywhere, Category = "StreetMap")
+    double RelativeLongitude;
+
+
 	UPROPERTY(EditAnywhere, Category = "StreetMap")
 		FStreetMapMeshBuildSettings MeshBuildSettings;
 
@@ -162,6 +170,7 @@ protected:
 	//** Physics data for mesh collision. */
 	UPROPERTY(Transient)
 		UBodySetup* StreetMapBodySetup;
+
 
 
 protected:
@@ -184,5 +193,26 @@ protected:
 	/** Cached StreetMap DefaultMaterial */
 	UPROPERTY()
 		UMaterialInterface* StreetMapDefaultMaterial;
+
+
+
+
+    /// @}
+    // ===========================================================================
+    /// @name Map representation
+    // ===========================================================================
+    /// @{
+private:
+
+  /// Add road descriptor
+  void AddRoadDescriptor(const TArray<FVector>& Knots,
+                         const FVector& StartTangent,
+                         const FVector& EndTangent,
+                         EStreetMapMeshTag Tag);
+
+public:
+
+  UPROPERTY(Category = "Map representation", EditAnywhere)
+  TArray<FRoadSkeletonDescriptor> MapSkeleton;
 
 };

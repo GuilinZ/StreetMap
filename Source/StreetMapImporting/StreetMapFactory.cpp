@@ -56,7 +56,6 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 	// @todo: We should make this scale factor customizable as an import option
 	const float OSMToCentimetersScaleFactor = 100.0f;
 
-
 	// Converts latitude to meters
 	auto ConvertLatitudeToMeters = []( const double Latitude ) -> double
 	{
@@ -70,10 +69,10 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 	};
 
 	// Converts latitude and longitude to X/Y coordinates, relative to some other latitude/longitude
-	auto ConvertLatLongToMetersRelative = [ConvertLatitudeToMeters, ConvertLongitudeToMeters]( 
-		const double Latitude, 
-		const double Longitude, 
-		const double RelativeToLatitude, 
+	auto ConvertLatLongToMetersRelative = [ConvertLatitudeToMeters, ConvertLongitudeToMeters](
+		const double Latitude,
+		const double Longitude,
+		const double RelativeToLatitude,
 		const double RelativeToLongitude ) -> FVector2D
 	{
 		// Applies Sanson-Flamsteed (sinusoidal) Projection (see http://www.progonos.com/furuti/MapProj/Normal/CartHow/HowSanson/howSanson.html)
@@ -83,10 +82,10 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 	};
 
 	// Adds a road to the street map using the OpenStreetMap data, flattening the road's coordinates into our map's space
-	auto AddRoadForWay = [ConvertLatLongToMetersRelative, OSMToCentimetersScaleFactor]( 
-		const FOSMFile& OSMFile, 
-		UStreetMap& StreetMapRef, 
-		const FOSMFile::FOSMWayInfo& OSMWay, 
+	auto AddRoadForWay = [ConvertLatLongToMetersRelative, OSMToCentimetersScaleFactor](
+		const FOSMFile& OSMFile,
+		UStreetMap& StreetMapRef,
+		const FOSMFile::FOSMWayInfo& OSMWay,
 		int32& OutRoadIndex ) -> bool
 	{
 		EStreetMapRoadType RoadType = EStreetMapRoadType::Other;
@@ -96,17 +95,20 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 			case FOSMFile::EOSMWayType::Motorway_Link:
 			case FOSMFile::EOSMWayType::Trunk:
 			case FOSMFile::EOSMWayType::Trunk_Link:
-			case FOSMFile::EOSMWayType::Primary:
-			case FOSMFile::EOSMWayType::Primary_Link:
 				RoadType = EStreetMapRoadType::Highway;
 				break;
 
+      case FOSMFile::EOSMWayType::Primary:
+			case FOSMFile::EOSMWayType::Primary_Link:
 			case FOSMFile::EOSMWayType::Secondary:
 			case FOSMFile::EOSMWayType::Secondary_Link:
-			case FOSMFile::EOSMWayType::Tertiary:
-			case FOSMFile::EOSMWayType::Tertiary_Link:
 				RoadType = EStreetMapRoadType::MajorRoad;
 				break;
+
+      case FOSMFile::EOSMWayType::Tertiary:
+      case FOSMFile::EOSMWayType::Tertiary_Link:
+        RoadType = EStreetMapRoadType::Tertiary;
+        break;
 
 			case FOSMFile::EOSMWayType::Residential:
 			case FOSMFile::EOSMWayType::Service:
@@ -114,6 +116,8 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 			case FOSMFile::EOSMWayType::Road:	// @todo: Consider excluding "Road" from our data set, as it could be a highway that wasn't properly tagged in OSM yet
 				RoadType = EStreetMapRoadType::Street;
 				break;
+
+      // Add here to consider footways and more.
 		}
 
 		if( RoadType != EStreetMapRoadType::Other )
@@ -209,9 +213,9 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 
 
 	// Adds a building to the street map using the OpenStreetMap data, flattening the road's coordinates into our map's space
-	auto AddBuildingForWay = [ConvertLatLongToMetersRelative, OSMToCentimetersScaleFactor]( 
-		const FOSMFile& OSMFile, 
-		UStreetMap& StreetMapRef, 
+	auto AddBuildingForWay = [ConvertLatLongToMetersRelative, OSMToCentimetersScaleFactor](
+		const FOSMFile& OSMFile,
+		UStreetMap& StreetMapRef,
 		const FOSMFile::FOSMWayInfo& OSMWay ) -> bool
 	{
 		if( OSMWay.WayType == FOSMFile::EOSMWayType::Building )
@@ -331,6 +335,9 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 	StreetMap->BoundsMin = FVector2D( TNumericLimits<float>::Max(), TNumericLimits<float>::Max() );
 	StreetMap->BoundsMax = FVector2D( TNumericLimits<float>::Lowest(), TNumericLimits<float>::Lowest() );
 
+    StreetMap->RelativeLatitude = OSMFile.AverageLatitude;
+    StreetMap->RelativeLongitude = OSMFile.AverageLongitude;
+
 	for( const FOSMFile::FOSMWayInfo* OSMWay : OSMFile.Ways )
 	{
 		// Handle buildings differently than roads
@@ -376,7 +383,7 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 				}
 				else
 				{
-					// Skipped ref because we didn't keep this road in our data set							
+					// Skipped ref because we didn't keep this road in our data set
 				}
 			}
 
@@ -434,5 +441,3 @@ bool UStreetMapFactory::LoadFromOpenStreetMapXMLFile( UStreetMap* StreetMap, FSt
 
 	return true;
 }
-
-

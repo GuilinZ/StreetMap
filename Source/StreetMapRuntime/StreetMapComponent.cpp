@@ -21,7 +21,7 @@ UStreetMapComponent::UStreetMapComponent(const FObjectInitializer& ObjectInitial
 	  StreetMap(nullptr),
 	  CachedLocalBounds(ForceInit)
 {
-	// We make sure our mesh collision profile name is set to NoCollisionProfileName at initialization. 
+	// We make sure our mesh collision profile name is set to NoCollisionProfileName at initialization.
 	// Because we don't have collision data yet!
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 
@@ -57,7 +57,7 @@ FPrimitiveSceneProxy* UStreetMapComponent::CreateSceneProxy()
 		StreetMapSceneProxy = new FStreetMapSceneProxy( this );
 		StreetMapSceneProxy->Init( this, Vertices, Indices );
 	}
-	
+
 	return StreetMapSceneProxy;
 }
 
@@ -65,7 +65,7 @@ FPrimitiveSceneProxy* UStreetMapComponent::CreateSceneProxy()
 int32 UStreetMapComponent::GetNumMaterials() const
 {
 	// NOTE: This is a bit of a weird thing about Unreal that we need to deal with when defining a component that
-	// can have materials assigned.  UPrimitiveComponent::GetNumMaterials() will return 0, so we need to override it 
+	// can have materials assigned.  UPrimitiveComponent::GetNumMaterials() will return 0, so we need to override it
 	// to return the number of overridden materials, which are the actual materials assigned to the component.
 	return HasValidMesh() ? GetNumMeshSections() : GetNumOverrideMaterials();
 }
@@ -82,6 +82,9 @@ void UStreetMapComponent::SetStreetMap(class UStreetMap* NewStreetMap, bool bCle
 
 		if (bRebuildMesh)
 			BuildMesh();
+
+        RelativeLongitude = StreetMap->GetRelativeLongitude();
+        RelativeLatitude = StreetMap->GetRelativeLatitude();
 	}
 }
 
@@ -197,7 +200,7 @@ class UBodySetup* UStreetMapComponent::GetBodySetup()
 {
 	if (CollisionSettings.bGenerateCollision == true)
 	{
-		// checking if we have a valid body setup. 
+		// checking if we have a valid body setup.
 		// A new one is created only if a valid body setup is not found.
 		CreateBodySetupIfNeeded();
 		return StreetMapBodySetup;
@@ -226,7 +229,7 @@ void UStreetMapComponent::GenerateMesh()
 	const FColor HighwayColor = MeshBuildSettings.HighwayColor.ToFColor( false );
 	const float BuildingBorderThickness = MeshBuildSettings.BuildingBorderThickness;
 	FLinearColor BuildingBorderLinearColor = MeshBuildSettings.BuildingBorderLinearColor;
-	const float BuildingBorderZ = MeshBuildSettings.BuildingBorderZ;
+	const float BuildingBorderZ = MeshBuildSettings.BuildingBorderZ; 
 	const FColor BuildingBorderColor( BuildingBorderLinearColor.ToFColor( false ) );
 	const FColor BuildingFillColor( FLinearColor( BuildingBorderLinearColor * 0.33f ).CopyWithNewOpacity( 1.0f ).ToFColor( false ) );
 	/////////////////////////////////////////////////////////
@@ -245,8 +248,15 @@ void UStreetMapComponent::GenerateMesh()
 		const auto& Nodes = StreetMap->GetNodes();
 		const auto& Buildings = StreetMap->GetBuildings();
 
-		for( const auto& Road : Roads )
-		{
+        RelativeLongitude = StreetMap->GetRelativeLongitude();
+        RelativeLatitude = StreetMap->GetRelativeLatitude();
+
+    MapSkeleton.Empty();
+    int32 tmpcnt = 0;
+    // MARK TODO switch on road tags
+    EStreetMapMeshTag MeshTag = EStreetMapMeshTag::Road_2_Lanes_OneWay_Plain;
+    for( const auto& Road : Roads )
+    {
 			float RoadThickness = StreetThickness;
 			FColor RoadColor = StreetColor;
 			switch( Road.RoadType )
@@ -254,35 +264,78 @@ void UStreetMapComponent::GenerateMesh()
 				case EStreetMapRoadType::Highway:
 					RoadThickness = HighwayThickness;
 					RoadColor = HighwayColor;
+          MeshTag = EStreetMapMeshTag::Road_3_Lanes_OneWay;
 					break;
-					
+
 				case EStreetMapRoadType::MajorRoad:
 					RoadThickness = MajorRoadThickness;
 					RoadColor = MajorRoadColor;
+          MeshTag = Road.bIsOneWay ?
+                         EStreetMapMeshTag::Road_2_Lanes_OneWay :
+                         EStreetMapMeshTag::Road_2_Lanes_DoubleWay;
 					break;
-					
+
+        case EStreetMapRoadType::Tertiary:
+          RoadThickness = MajorRoadThickness;
+          MeshTag = Road.bIsOneWay ?
+                         EStreetMapMeshTag::Road_2_Lanes_OneWay :
+                         EStreetMapMeshTag::Road_1_Lane_DoubleWay_Solid;
+          break;
+
 				case EStreetMapRoadType::Street:
+          MeshTag = Road.bIsOneWay ?
+                         EStreetMapMeshTag::Road_2_Lanes_OneWay_Plain :
+                         EStreetMapMeshTag::Road_1_Lane_DoubleWay_Dashed;
+          break;
 				case EStreetMapRoadType::Other:
+          // Should not see this type
+          check( 0 );
 					break;
-					
+
 				default:
 					check( 0 );
 					break;
 			}
-			
-			for( int32 PointIndex = 0; PointIndex < Road.RoadPoints.Num() - 1; ++PointIndex )
-			{
-				AddThick2DLine( 
-					Road.RoadPoints[ PointIndex ],
-					Road.RoadPoints[ PointIndex + 1 ],
-					RoadZ,
-					RoadThickness,
-					RoadColor,
-					RoadColor,
-					MeshBoundingBox );
-			}
-		}
-		
+
+      TArray<FVector> Knots;
+      FVector StartTangent;
+      FVector EndTangent;
+      float TangentLength = 1.0f;
+
+        for( int32 PointIndex = 0; PointIndex < Road.RoadPoints.Num() - 1; ++PointIndex )
+		{
+            auto& RoadPointA = Road.RoadPoints[ PointIndex ];
+            auto& RoadPointB = Road.RoadPoints[ PointIndex + 1 ];
+            Knots.Emplace(FVector(RoadPointA.X, RoadPointA.Y, 0.0f));
+
+            if (PointIndex == 0)
+            {
+            StartTangent = FVector((RoadPointB - RoadPointA).GetSafeNormal(), 0.0f);
+            }
+            if (PointIndex == Road.RoadPoints.Num() - 2)
+            {
+            EndTangent = FVector((RoadPointB - RoadPointA).GetSafeNormal(), 0.0f);
+            Knots.Emplace(FVector(RoadPointB.X, RoadPointB.Y, 0.0f));
+            }
+
+            AddThick2DLine(
+                        RoadPointA,
+                        RoadPointB,
+                        RoadZ,
+                        RoadThickness,
+                        RoadColor,
+                        RoadColor,
+                        MeshBoundingBox );
+        }
+      // UE_LOG(LogTemp, Warning, TEXT("UStreetMapComponent::GenerateMesh: generate descriptor %d"), tmpcnt++);
+      // for (int i=0; i<Knots.Num(); ++i)
+      // {
+      //   UE_LOG(LogTemp, Warning, TEXT("knot id - %d: X = %f, Y = %f"), i, Knots[i].X, Knots[i].Y);
+      // }
+
+      AddRoadDescriptor(Knots, StartTangent, EndTangent, MeshTag);
+    }
+
 		TArray< int32 > TempIndices;
 		TArray< int32 > TriangulatedVertexIndices;
 		TArray< FVector > TempPoints;
@@ -293,7 +346,7 @@ void UStreetMapComponent::GenerateMesh()
 			// Building mesh (or filled area, if the building has no height)
 
 			// Triangulate this building
-			// @todo: Performance: Triangulating lots of building polygons is quite slow.  We could easily do this 
+			// @todo: Performance: Triangulating lots of building polygons is quite slow.  We could easily do this
 			//        as part of the import process and store tessellated geometry instead of doing this at load time.
 			bool WindsClockwise;
 			if( FPolygonTools::TriangulatePolygon( Building.BuildingPoints, TempIndices, /* Out */ TriangulatedVertexIndices, /* Out */ WindsClockwise ) )
@@ -313,7 +366,7 @@ void UStreetMapComponent::GenerateMesh()
 					else if (Building.BuildingLevels > 0) {
 						BuildingFillZ = (float)Building.BuildingLevels * BuildingLevelFloorFactor;
 					}
-				}		
+				}
 
 				// Top of building
 				{
@@ -516,7 +569,7 @@ void UStreetMapComponent::UpdateNavigationIfNeeded()
 {
 	if (bCanEverAffectNavigation || bNavigationRelevant)
 	{
-		UNavigationSystem::UpdateComponentInNavOctree(*this);
+		FNavigationSystem::UpdateComponentData(*this);
 	}
 }
 
@@ -628,3 +681,11 @@ FString UStreetMapComponent::GetStreetMapAssetName() const
 	return StreetMap != nullptr ? StreetMap->GetName() : FString(TEXT("NONE"));
 }
 
+void UStreetMapComponent::AddRoadDescriptor(const TArray<FVector>& Knots,
+                                            const FVector& StartTangent,
+                                            const FVector& EndTangent,
+                                            EStreetMapMeshTag Tag)
+{
+  FRoadSkeletonDescriptor NewRoad(Knots, StartTangent, EndTangent, /*InTangentLength = */1.0f, Tag);
+  MapSkeleton.Add(NewRoad);
+}
