@@ -1,4 +1,5 @@
-// Copyright 2017 Mike Fricker. All Rights Reserved.
+// Copyright 2017 Mike Fricker, 2019 Rui Chen. All Rights Reserved.
+
 #pragma once
 
 #include "StreetMap.h"

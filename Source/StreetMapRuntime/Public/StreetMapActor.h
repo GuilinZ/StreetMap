@@ -1,5 +1,4 @@
-// Copyright 2017 Mike Fricker. All Rights Reserved.
-// Copyright 2018 Rui Chen. All Rights Reserved.
+// Copyright 2017 Mike Fricker, 2019 Rui Chen. All Rights Reserved.
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
