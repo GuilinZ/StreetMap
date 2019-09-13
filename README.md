@@ -4,6 +4,8 @@ Video demo:
 
 I enhanced the **StreetMapActor** with the ability to spawn road actors for autonomous vehicle simulation. Currently 4 road types (Highway, MajorRoad, Tertiary, Street) and 6 road meshes are supported. users can customize the mapping between combination of **RoadType** and **bIsOneWay** to road mesh tags. Static road meshes can be assigned to mesh tags in **StreetMapActor settings**.
 
+This repo is integrated as a submodule in my [Carla project](https://github.com/ruichen-v/carla).
+
 Some more screen shots are given below. 
 
 ![UE4StreetMapperUMAANorth](Docs/UE4StreetMapper_UMAANorth.png 'Norm Campus of University of Michigan, Ann Arbor, MI')
