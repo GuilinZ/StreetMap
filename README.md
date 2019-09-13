@@ -1,3 +1,21 @@
+## Road generator
+
+[![Demonstration of generating downtown Pittsburgh from OSM data.](Docs/img/auto_gen_map_pitts.png 'Link to demo video')](https://www.youtube.com/watch?v=DuCVeBRDr7E)
+
+I enhanced the **StreetMapActor** with the ability to spawn road actors for autonomous vehicle simulation. Currently 4 road types (Highway, MajorRoad, Tertiary, Street) and 6 road meshes are supported. users can customize the mapping between combination of **RoadType** and **bIsOneWay** to road mesh tags. Static road meshes can be assigned to mesh tags in **StreetMapActor settings**.
+
+Some more examples are given below. 
+
+![UE4StreetMapperUMAANorth](Docs/UE4StreetMapper_UMAANorth.png)
+
+![UE4StreetMapper_RoundAbout](Docs/UE4StreetMapper_RoundAbout.png)
+
+![UE4StreetMapperPittsburgh](Docs/UE4StreetMapper_Pittsburgh.png)
+
+![UE4StreetMapper_Sqaure](Docs/UE4StreetMapper_Sqaure.png)
+
+![UE4StreetMapper_Motorway](Docs/UE4StreetMapper_Motorway.png)
+
 # Street Map Plugin for UE4
 
 This plugin allows you to import **OpenStreetMap** XML data into your **Unreal Engine 4** project as a new StreetMap asset type.  You can use the example **Street Map Component** to render streets and buildings.
@@ -141,19 +159,3 @@ I'm not planning to actively update the plugin on a regular basis, but if any cr
 For bugs, please [file an issue](https://github.com/ue4plugins/StreetMap/issues), submit a [pull request](https://github.com/ue4plugins/StreetMap/pulls?q=is%3Aopen+is%3Apr) or catch me [on Twitter](http://twitter.com/mike_fricker).
 
 Finally, a **big thanks** to the [OpenStreetMap Foundation](http://wiki.osmfoundation.org/wiki/Main_Page) and the fantastic community who contribute map data and maintain the database.
-
-## Road generator
-
-I enhanced the **StreetMapActor** with the ability to spawn road actors for autonomous vehicle simulation. Currently 4 road types (Highway, MajorRoad, Tertiary, Street) and 6 road meshes are supported. users can customize the mapping between combination of **RoadType** and **bIsOneWay** to road mesh tags. Static road meshes can be assigned to mesh tags in **StreetMapActor settings**.
-
-Some sample mappings are given. Please contact **Rui Chen**(richen@umich.edu) for video demos.
-
-![UE4StreetMapperUMAANorth](Docs/UE4StreetMapper_UMAANorth.png)
-
-![UE4StreetMapper_RoundAbout](Docs/UE4StreetMapper_RoundAbout.png)
-
-![UE4StreetMapperPittsburgh](Docs/UE4StreetMapper_Pittsburgh.png)
-
-![UE4StreetMapper_Sqaure](Docs/UE4StreetMapper_Sqaure.png)
-
-![UE4StreetMapper_Motorway](Docs/UE4StreetMapper_Motorway.png)
