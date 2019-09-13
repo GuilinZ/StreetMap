@@ -4,17 +4,17 @@ Video demo:
 
 I enhanced the **StreetMapActor** with the ability to spawn road actors for autonomous vehicle simulation. Currently 4 road types (Highway, MajorRoad, Tertiary, Street) and 6 road meshes are supported. users can customize the mapping between combination of **RoadType** and **bIsOneWay** to road mesh tags. Static road meshes can be assigned to mesh tags in **StreetMapActor settings**.
 
-Some more examples are given below. 
+Some more screen shots are given below. 
 
-![UE4StreetMapperUMAANorth](Docs/UE4StreetMapper_UMAANorth.png)
+![UE4StreetMapperUMAANorth](Docs/UE4StreetMapper_UMAANorth.png 'Norm Campus of University of Michigan, Ann Arbor, MI')
 
-![UE4StreetMapper_RoundAbout](Docs/UE4StreetMapper_RoundAbout.png)
+![UE4StreetMapper_RoundAbout](Docs/UE4StreetMapper_RoundAbout.png 'Rounda about in Ann Arbor, MI')
 
-![UE4StreetMapperPittsburgh](Docs/UE4StreetMapper_Pittsburgh.png)
+![UE4StreetMapperPittsburgh](Docs/UE4StreetMapper_Pittsburgh.png 'Downtown Pittsburgh')
 
-![UE4StreetMapper_Sqaure](Docs/UE4StreetMapper_Sqaure.png)
+![UE4StreetMapper_Sqaure](Docs/UE4StreetMapper_Sqaure.png 'Downtown Pittsburgh')
 
-![UE4StreetMapper_Motorway](Docs/UE4StreetMapper_Motorway.png)
+![UE4StreetMapper_Motorway](Docs/UE4StreetMapper_Motorway.png 'Downtown Pittsburgh')
 
 # Street Map Plugin for UE4
 
