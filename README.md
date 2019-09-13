@@ -1,6 +1,6 @@
 ## Road generator
-
-[![Demonstration of generating downtown Pittsburgh from OSM data.](Docs/img/auto_gen_map_pitts.png 'Link to demo video')](https://www.youtube.com/watch?v=DuCVeBRDr7E)
+Video demo:
+[![Demonstration of generating downtown Pittsburgh from OSM data.](Docs/auto_gen_map_pitts.png 'Link to demo video')](https://www.youtube.com/watch?v=DuCVeBRDr7E)
 
 I enhanced the **StreetMapActor** with the ability to spawn road actors for autonomous vehicle simulation. Currently 4 road types (Highway, MajorRoad, Tertiary, Street) and 6 road meshes are supported. users can customize the mapping between combination of **RoadType** and **bIsOneWay** to road mesh tags. Static road meshes can be assigned to mesh tags in **StreetMapActor settings**.
 
